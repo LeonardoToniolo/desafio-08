@@ -1,5 +1,7 @@
 import styled from 'styled-components';
 
+import { shade } from 'polished';
+
 interface CardProps {
   total?: boolean;
 }
@@ -92,4 +94,24 @@ export const TableContainer = styled.section`
       border-radius: 0 8px 8px 0;
     }
   }
+`;
+
+export const Button = styled.button`
+  background: #ff872c;
+  color: #fff;
+  border-radius: 5px;
+  padding: 10px;
+  border: 0;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background: ${shade(0.2, '#ff872c')};
+  }
+`;
+
+export const ButtonContainer = styled.div`
+  display: float;
+  justify-content: start;
+  align-items: center;
+  margin: 16px 0;
 `;

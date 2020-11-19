@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 
 import income from '../../assets/income.svg';
 import outcome from '../../assets/outcome.svg';
@@ -10,7 +10,13 @@ import Header from '../../components/Header';
 
 import formatValue from '../../utils/formatValue';
 
-import { Container, CardContainer, Card, TableContainer } from './styles';
+import {
+  Container,
+  CardContainer,
+  Card,
+  TableContainer,
+  Button,
+} from './styles';
 
 interface Transaction {
   id: string;
@@ -60,6 +66,26 @@ const Dashboard: React.FC = () => {
     loadTransactions();
   }, []);
 
+  const handleDeleteClick = useCallback(
+    async (id: string) => {
+      await api.delete(`/transactions/${id}`);
+      const newTransactions = transactions.filter(
+        transaction => transaction.id !== id,
+      );
+
+      setTransactions(newTransactions);
+
+      const response = await api.get('/transactions');
+      const balanceFormatted = {
+        income: formatValue(response.data.balance.income),
+        outcome: formatValue(response.data.balance.outcome),
+        total: formatValue(response.data.balance.total),
+      };
+      setBalance(balanceFormatted);
+    },
+    [transactions],
+  );
+
   return (
     <>
       <Header />
@@ -70,24 +96,29 @@ const Dashboard: React.FC = () => {
               <p>Entradas</p>
               <img src={income} alt="Income" />
             </header>
-            <h1 data-testid="balance-income">{balance.income}</h1>
+            <h1 data-testid="balance-income">
+              {balance ? balance.income : 'Loading...'}
+            </h1>
           </Card>
           <Card>
             <header>
               <p>Saídas</p>
               <img src={outcome} alt="Outcome" />
             </header>
-            <h1 data-testid="balance-outcome">{balance.outcome}</h1>
+            <h1 data-testid="balance-outcome">
+              {balance ? balance.outcome : 'Loading...'}
+            </h1>
           </Card>
           <Card total>
             <header>
               <p>Total</p>
               <img src={total} alt="Total" />
             </header>
-            <h1 data-testid="balance-total">{balance.total}</h1>
+            <h1 data-testid="balance-total">
+              {balance ? balance.total : 'Loading...'}
+            </h1>
           </Card>
         </CardContainer>
-
         <TableContainer>
           <table>
             <thead>
@@ -96,6 +127,7 @@ const Dashboard: React.FC = () => {
                 <th>Preço</th>
                 <th>Categoria</th>
                 <th>Data</th>
+                <th>Deletar</th>
               </tr>
             </thead>
 
@@ -109,6 +141,14 @@ const Dashboard: React.FC = () => {
                   </td>
                   <td>{transaction.category.title}</td>
                   <td>20/04/2020</td>
+                  <td>
+                    <Button
+                      type="button"
+                      onClick={() => handleDeleteClick(transaction.id)}
+                    >
+                      Deletar
+                    </Button>
+                  </td>
                 </tr>
               ))}
             </tbody>
